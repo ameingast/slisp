@@ -1,4 +1,4 @@
-module Data where
+module SLISP.Data where
     
 import qualified Data.Map as M
     

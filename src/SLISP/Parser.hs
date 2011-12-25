@@ -1,6 +1,7 @@
-module Parser where
+module SLISP.Parser where
     
-import Data
+import SLISP.Data
+
 import Text.ParserCombinators.Parsec
 
 symbol = oneOf "!$%&|*+-/<=>?@^_~."

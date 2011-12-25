@@ -1,0 +1,24 @@
+Name:                slisp
+Version:             0.1
+Synopsis:            SLISP is a (very) basic lisp interpreter
+Homepage:            http://github.com/ameingast/slisp
+License:             BSD3
+License-file:        LICENSE
+Author:              Andreas Meingast
+Maintainer:          ameingast@gmail.com
+Category:            Web
+Build-type:          Simple
+Cabal-version:       >= 1.2
+
+Executable slisp
+  hs-source-dirs: src
+
+  Main-is:        Main.hs
+
+  Build-Depends: parsec
+  Build-Depends: base
+  Build-Depends: haskell98
+  Build-Depends: containers
+
+  ghc-options:      -Wall -fno-warn-unused-do-bind -O3
+  ghc-prof-options: -prof -auto-all

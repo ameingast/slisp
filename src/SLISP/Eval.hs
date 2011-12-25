@@ -1,10 +1,11 @@
-module Eval where
+module SLISP.Eval where
     
-import qualified Data.Map as M
-import Parser
-import Maybe
-import Data
+import SLISP.Parser
+import SLISP.Data
+
 import Char
+import Maybe
+import qualified Data.Map as M
 
 listEval            ::  (SymbolTable,[E]) -> [(SymbolTable,E)]
 listEval (t,[])     =   []
