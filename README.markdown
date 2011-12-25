@@ -1,16 +1,16 @@
-# S(low) LISP
+S(LOW) LISP
+===========
 
-## About
-SLISP is a (very) basic lisp interpreter written in Haskell.
+About
+-----
+SLISP is a (very) basic interpreter for a side-effect free LISP dialect 
+written in Haskell. 
 
-It supports function definitions, lambda-expressions and has a couple of builtin operators.
-In addition to that, it has a (very) basic list library implemented in lisp.
+It supports function definitions, lambda-expressions and provides primitive
+builtins. It also features a rudimentary LISP core library (written in LISP).
 
-## Dependencies
-* GHC 6
-* Parsec
-
-## Usage
-To start it, run:
-
-    > echo "(+ 1 1)" | runhaskell Main.hs
+Usage
+-----
+To start the REPL, run:
+      
+    make

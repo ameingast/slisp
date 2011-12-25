@@ -1,10 +1,10 @@
 module SLISP.Eval where
-    
-import SLISP.Parser
+
 import SLISP.Data
 
 import Char
 import Maybe
+
 import qualified Data.Map as M
 
 listEval            ::  (SymbolTable,[E]) -> [(SymbolTable,E)]
@@ -25,7 +25,7 @@ eval (t,K k e)          =   let (t',e') = eval (t,e) in (t',K k e')
 eval (t,L [])           =   (t, L [])
 eval (t,L ((S e):es))   =   evalSymbol (t,S e) es
 eval (t,L ((L l):es))   =   let (t',l') = eval (t,L l) in eval (t',L (l':es))
-eval (t,L es)           =   error $ "illegal function call: " ++ show es
+eval (t,L es)           =   error $ "Illegal function call: " ++ show es
 
 evalSymbol              ::  (SymbolTable,E) -> [E] -> (SymbolTable,E)
 evalSymbol (t,S s) es   =   let els = map snd $ listEval (t,es)
@@ -40,7 +40,7 @@ evalSymbol (t,S s) es   =   let els = map snd $ listEval (t,es)
                     pairs = zip args (map quote els')
                 in  eval (t,apply expr pairs)
             NoSymbol ->
-                error $ "unbound symbol: " ++ s
+                error $ "Unbound symbol: '" ++ s ++ "'"
 
 keyOrder                ::  [String] -> [E] -> [E]
 keyOrder [] exprs       =   exprs
@@ -50,7 +50,7 @@ keyOrder (a:as) exprs   =   case keyOrder' a exprs of
 
 keyOrder'                   ::  String -> [E] -> Maybe E
 keyOrder' a []              =   Nothing
-keyOrder' a ((K a' e):es)   |   a == a' = Just e   
+keyOrder' a ((K a' e):es)   |   a == a' = Just e
 keyOrder' a (e:es)          =   keyOrder' a es
 
 quote       ::  E -> E
@@ -59,7 +59,7 @@ quote x     =   Q x
 
 apply                   ::  E -> [(String,E)] -> E
 apply (L l) pairs       =   L $ map (\x -> apply x pairs) l
-apply (S s) pairs       |   elem s (map fst pairs) 
+apply (S s) pairs       |   elem s (map fst pairs)
                         =   snd $ head $ filter (\(s',_) -> s == s') pairs
 apply (F (Q s)) pairs   =   F $ Q $ apply s pairs
 apply x _               =   x
@@ -159,19 +159,19 @@ lispQuote (t,[x]) = (t,x)
 
 lispIf (t,(c:a:b:_)) =  let (t',c') = eval (t,c)
                         in  if fromLispBool c' then eval (t',a) else eval (t',b)
-                                
+
 lispCond (t,L [c,a]:xs) =   let (t',c') = eval (t,c)
                             in  if fromLispBool c' then eval (t',a) else lispCond (t',xs)
-                            
+
 lispLambda (t,(L args):body:_) =    let name = newLambdaName t "lambda_0"
                                     in  (M.insert name (map fromS args,body) t,S name)
-                                    
+
 newLambdaName :: SymbolTable -> String -> String
 newLambdaName t s = let (name,number) = break isDigit s
                         name' = name ++ show (read number + 1)
                     in  case M.lookup name t of
                             Just x -> newLambdaName t name'
                             Nothing -> name'
-                        
+
 lispEnv (t,x:xs) =  let (t',x') = eval (t,x)
                     in  (t,snd $ fromJust $ M.lookup (fromS x') t')

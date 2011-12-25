@@ -59,7 +59,7 @@ startParse = do
     eof
     return x
 
-parse'      ::  String -> [E]
-parse' s    =   case (parse startParse "" s) of
-                    Left e  ->  error $ show e
-                    Right x -> x
+parse' :: String -> [E]
+parse' s = case (parse startParse "" s) of
+            Left e  ->  error $ show e
+            Right x -> x

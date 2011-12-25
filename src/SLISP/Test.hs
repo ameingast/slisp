@@ -1,23 +1,21 @@
-module SLISP.Test(runTests) where
+module SLISP.Test(test) where
 
+import SLISP.Core
 import SLISP.Data
-import SLISP.Eval
-import SLISP.Parser
-import SLISP.Repl
 
-import Maybe
-import System.IO
+tests :: [String]
+tests   = ["test/core.lisp"]
 
-tests   = ["test/list.lisp"]
-
-runTests                ::  [String] -> (SymbolTable,E) -> IO (SymbolTable,E)
-runTests [] (t,e)       =   return (t,e)
-runTests (x:xs) (t,e)   =   do  (t',e') <- file t x 
-                                if fromLispBool e'  then runTests xs (t',e')
-                                                    else error $ "test failed: " ++ x
+runTests ::  [String] -> (SymbolTable,E) -> IO (SymbolTable,E)
+runTests [] (t,e) = return (t,e)
+runTests (x:xs) (t,_) = do 
+  (t',e') <- evalFile t x 
+  if fromLispBool e'
+    then runTests xs (t',e')
+    else error $ "test failed: " ++ x
                                                     
-test :: IO ()
-test =  do
-    (t,_) <- loadLibs libs (emptyTable,I 1)
+test :: [String] -> IO ()
+test files = do
+    (t,_) <- loadLibs files (emptyTable,I 1)
     runTests tests (t, I 1)
-    putStrLn "tests finished"
+    return ()

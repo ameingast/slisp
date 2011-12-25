@@ -31,6 +31,9 @@ instance Eq E where
     
 instance Ord E where
     compare (I i) (I j) = compare i j
+    compare (I i) (S s) = compare (show i) s
+    compare (S s) (I i) = compare s (show i)
+    compare _ _ = LT
 
 type Signature      =   ([String],E)
 type SymbolTable    =   M.Map String Signature
@@ -39,7 +42,8 @@ data SymbolType     =   BuiltinSymbol       |
                         BuiltinStateSymbol  |
                         ExternalSymbol      |
                         NoSymbol
- 
+
+emptyTable :: M.Map k a
 emptyTable = M.empty
                   
 fromI   ::  E -> Integer
@@ -53,17 +57,19 @@ fromST  =   show
 
 fromQ       ::  E -> E
 fromQ (Q e) =   e
+fromQ x     = error $ "Cannot unquote " ++ show x
 
 fromK       ::  E -> String
 fromK       =   show
 
 fromL       ::  E -> [E]
 fromL (L l) =   l
+fromL x     = error $ "Cannot unlist " ++ show x
 
 fromLispBool        ::  E -> Bool
 fromLispBool (I i)  =   i /= 0
 fromLispBool (L l)  =   l /= []
-fromLispBool x      =   True
+fromLispBool _      =   True
 
 toLispBool          ::  Bool -> E
 toLispBool True     =   I 1

@@ -6,19 +6,26 @@ License:             BSD3
 License-file:        LICENSE
 Author:              Andreas Meingast
 Maintainer:          ameingast@gmail.com
-Category:            Web
+Category:            Language
 Build-type:          Simple
-Cabal-version:       >= 1.2
+Cabal-version:       >= 1.6
+
+Data-Files: lib/core.lisp
+Data-Files: test/core.lisp
+
+Source-repository head
+  type: git
+  location: http://github.com/ameingast/slisp.git
 
 Executable slisp
-  hs-source-dirs: src
+  hs-source-dirs: src src/SLISP src/SLISP/Util
 
-  Main-is:        Main.hs
+  Main-is: Main.hs
 
   Build-Depends: parsec
   Build-Depends: base
   Build-Depends: haskell98
   Build-Depends: containers
 
-  ghc-options:      -Wall -fno-warn-unused-do-bind -O3
+  ghc-options: -Wall -fno-warn-unused-do-bind -O3
   ghc-prof-options: -prof -auto-all

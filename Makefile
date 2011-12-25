@@ -4,10 +4,10 @@ GHCI       	= ghci
 MAIN     		= src/Main.hs
 INCLUDE 		= src
 DEFAULT  		= runhaskell
-TARGET   		= Main
+TARGET   		= slisp
 
 
-all: 	repl
+all: 	$(DEFAULT)
 
 configure:
 	@$(CABAL) configure
@@ -25,10 +25,10 @@ run: 	build
 	@./dist/build/$(TARGET)/$(TARGET)
 
 runhaskell:
-	@$(RUNHASKELL) -i$(INCLUDE) $(MAIN) 
+	@$(RUNHASKELL) -i$(INCLUDE) $(MAIN) -r
 
 repl:
-	@cd src && $(GHCI) Main.hs
+	@$(GHCI) -i$(INCLUDE) $(MAIN)
 
 wc:
 	@find src -iname "*.hs" | xargs wc -l
