@@ -3,8 +3,9 @@ module SLISP.Parser where
 import SLISP.Data
 
 import Text.ParserCombinators.Parsec
+import Control.Applicative((*>), (<*))
 
-symbol = oneOf "!$%&|*+-/<=>?@^_~."
+symbol = oneOf "!$%&|*+-/<=>?@^_~.`"
 
 parseStartsWith c expr construct = char c >> expr >>= return . construct
 
@@ -53,11 +54,13 @@ parseFExpr = parseStartsWith '#' parseExpr F
 
 parseExpr = (try parseAtom) <|> (try parseList) <|> (try parseFExpr) <|> (try parseQExpr)
 
-startParse = do
-    parseSpaces
-    x <- ((try parseAtom) <|> (try parseList)) `sepEndBy` parseSpaces
-    eof
-    return x
+parseBase = ((try parseAtom) <|> 
+            (try parseList)  <|>
+            (try parseQExpr) <|>
+            (try parseFExpr) <|> 
+            (try parseList)) `sepEndBy` parseSpaces
+  
+startParse = parseSpaces *> parseBase <* eof
 
 parse' :: String -> [E]
 parse' s = case (parse startParse "" s) of

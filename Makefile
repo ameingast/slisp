@@ -6,22 +6,21 @@ INCLUDE 		= src
 DEFAULT  		= runhaskell
 TARGET   		= slisp
 
-
-all: 	$(DEFAULT)
+all: test
 
 configure:
 	@$(CABAL) configure
 
-build: 	configure
+build: configure
 	@$(CABAL) build
 
-doc: 	configure
+doc: configure
 	@$(CABAL) haddock --executables
 
-dist: 	configure
+dist:	configure
 	@$(CABAL) sdist
 
-run: 	build
+run: build
 	@./dist/build/$(TARGET)/$(TARGET)
 
 runhaskell:
@@ -35,3 +34,6 @@ wc:
 
 clean:
 	@$(CABAL) clean
+
+test: build
+	@./src/script/test

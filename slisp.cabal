@@ -10,15 +10,16 @@ Category:            Language
 Build-type:          Simple
 Cabal-version:       >= 1.6
 
-Data-Files: lib/core.lisp
-Data-Files: test/core.lisp
+Data-Files: src/lib/core.lisp
+
+Extra-source-files: src/SLISP/*.hs src/SLISP/Util/*.hs
 
 Source-repository head
   type: git
   location: http://github.com/ameingast/slisp.git
 
 Executable slisp
-  hs-source-dirs: src src/SLISP src/SLISP/Util
+  hs-source-dirs: src
 
   Main-is: Main.hs
 
@@ -26,6 +27,7 @@ Executable slisp
   Build-Depends: base
   Build-Depends: haskell98
   Build-Depends: containers
-
+  Build-Depends: haskeline
+  
   ghc-options: -Wall -fno-warn-unused-do-bind -O3
   ghc-prof-options: -prof -auto-all

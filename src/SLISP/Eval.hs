@@ -94,6 +94,7 @@ builtin =   [
     ("cons",    \(x:(L l):_) -> L (x:l)),
     ("append",  L . foldl1 (++) . map fromL),
     ("list",    L),
+    ("@",       L),
     ("function",F . head)]
 
 tryAppend       ::  E -> [E] -> E
@@ -173,5 +174,5 @@ newLambdaName t s = let (name,number) = break isDigit s
                             Just x -> newLambdaName t name'
                             Nothing -> name'
 
-lispEnv (t,x:xs) =  let (t',x') = eval (t,x)
-                    in  (t,snd $ fromJust $ M.lookup (fromS x') t')
+lispEnv (t,x:xs) =  let (t', x') = eval (t, x)
+                    in  (t, snd $ fromJust $ M.lookup (fromS x') t')

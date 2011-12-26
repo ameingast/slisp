@@ -1,0 +1,51 @@
+#!/bin/sh
+
+SLISP="./dist/build/slisp/slisp"
+SLISP_FLAGS=""
+ERRORS=""
+PASSES=0
+FAILS=0
+TOTALS=0
+
+for f in test/*/*.lisp; do
+  RESULT=`${SLISP} ${SLISP_FLAGS} ${f} 2>&1`
+  RESULT_ERROR=$?
+  EXPECTED=`grep ';;' ${f} | sed 's/;;[ \t]*//'`
+  EXPECTED_CRASH=`grep ';;!' ${f} | sed 's/;;![ \t]*//'`
+  
+  if [ x"${RESULT_ERROR}" != x"0" ]; then
+    if [ x"${EXPECTED_CRASH}" != x ]; then
+      if [ x"${RESULT}" == x"${EXPECTED_CRASH}" ]; then
+      printf "."
+      PASSES=$[${PASSES} + 1]
+      else
+        printf "x"
+        ERRORS="${ERRORS}${f}: expected <${EXPECTED_CRASH}>, but got <${RESULT}>\n"
+        FAILS=$[${FAILS} + 1]
+      fi
+    else
+      printf "x"
+      ERRORS="${ERRORS}${f}: expected <${EXPECTED}>, but got <${RESULT}>\n"
+      FAILS=$[${FAILS} + 1]
+    fi
+  elif [ x"${RESULT}" != x"${EXPECTED}" ]; then
+    printf "x"
+    ERRORS="${ERRORS}${f}: expected <${EXPECTED}>, but got <${RESULT}>\n"
+    FAILS=$[${FAILS} + 1]
+  else
+    printf "."
+    PASSES=$[${PASSES} + 1]
+  fi
+  
+  TOTALS=$[${TOTALS} + 1]
+done
+
+echo
+
+if [ x"${ERRORS}" != x ]; then
+  echo "${ERRORS}"
+else
+  echo
+fi
+
+echo "${PASSES} Ok. ${FAILS} Fails. (${TOTALS} tests)"

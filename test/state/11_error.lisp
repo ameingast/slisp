@@ -1,0 +1,3 @@
+;;! slisp: ["Error"]
+
+(error "Error")
