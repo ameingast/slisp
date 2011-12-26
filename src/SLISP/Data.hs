@@ -55,6 +55,11 @@ fromI   =   read . show
 fromS   ::  E -> String
 fromS   =   show
 
+fromSClear :: E -> String
+fromSClear (S x) = x
+fromSClear (ST x) = x
+fromSClear x = fromS x
+
 fromST  ::  E -> String
 fromST  =   show
 

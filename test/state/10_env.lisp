@@ -1,3 +1,5 @@
-;; ()
+;; (lambda(x) (+ 1 x))
 
-(env "and")
+(defun add1(x) (+ 1 x))
+
+(env "add1")
