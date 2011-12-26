@@ -1,11 +1,10 @@
-(defun id (x)
-  x)
+(defun id (x) x)
 
 (defun null? (xs)
   (eq '() xs))
 
 (defun compose (f g x)
-  (f (g x)))
+  (funcall f (funcall g x)))
 
 (defun map (f xs)
   (if (eq '() xs) '()
@@ -74,13 +73,13 @@
     (not axs)))
 
 (defun drop-while (f xs)
-  (if (funcall f (car xs)) (dropWhile f (cdr xs))
+  (if (funcall f (car xs)) (drop-while f (cdr xs))
     xs))
  
 (defun take-while (f xs)
   (if (not (funcall f (car xs))) '()
     (cons (car xs)
-      (takeWhile f (cdr xs)))))
+      (take-while f (cdr xs)))))
 
 (defun init (xs)
   (if (null? (cdr xs)) '()
@@ -97,11 +96,14 @@
       (cons (car xs)
         (nub (cdr xs))))))
 
-(defun zip (xs ys)
+(defun zip-with (f xs ys)
   (if (or (null? xs) (null? ys)) '()
-    (let ((head (list (car xs) (car ys))))
+    (let ((head (funcall f (car xs) (car ys))))
       (cons head
-        (zip (cdr xs) (cdr ys))))))
+        (zip-with f (cdr xs) (cdr ys))))))
+
+(defun zip (xs ys)
+  (zip-with #'list xs ys))
 
 (defun union (xs ys)
   (cond 
@@ -119,11 +121,8 @@
 
 (defun reverse (xs)
   (if (null? xs) '()
-    (cons (reverse (cdr xs)) 
-      (car xs))))
-
-(defun compose (g f x)
-  (g (f x)))
+    (append (reverse (cdr xs)) 
+      (list (car xs)))))
 
 (defun enum-from-to-step (n m s)
   (if (> n m) '()

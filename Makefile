@@ -3,10 +3,12 @@ RUNHASKELL 	= runhaskell
 GHCI       	= ghci
 MAIN     		= src/Main.hs
 INCLUDE 		= src
-DEFAULT  		= runhaskell
+DEFAULT  		= test
 TARGET   		= slisp
+TEST				= src/script/test
+BINARY			= dist/build/$(TARGET)/$(TARGET)
 
-all: test
+all: $(DEFAULT)
 
 configure:
 	@$(CABAL) configure
@@ -20,20 +22,14 @@ doc: configure
 dist:	configure
 	@$(CABAL) sdist
 
-run: build
-	@./dist/build/$(TARGET)/$(TARGET)
+repl: build
+	@$(BINARY) -r
 
-runhaskell:
-	@$(RUNHASKELL) -i$(INCLUDE) $(MAIN) -r
-
-repl:
+ghci:
 	@$(GHCI) -i$(INCLUDE) $(MAIN)
-
-wc:
-	@find src -iname "*.hs" | xargs wc -l
 
 clean:
 	@$(CABAL) clean
 
 test: build
-	@./src/script/test
+	@$(TEST)

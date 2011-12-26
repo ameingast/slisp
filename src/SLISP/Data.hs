@@ -43,6 +43,9 @@ data SymbolType     =   BuiltinSymbol       |
                         ExternalSymbol      |
                         NoSymbol
 
+type State = (SymbolTable, E)
+type ListState = (SymbolTable, [E])
+
 emptyTable :: M.Map k a
 emptyTable = M.empty
                   

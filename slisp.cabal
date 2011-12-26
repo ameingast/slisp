@@ -1,6 +1,7 @@
 Name:                slisp
 Version:             0.1
 Synopsis:            SLISP is a (very) basic lisp interpreter
+Description:         SLISP is a (very) basic lisp interpreter
 Homepage:            http://github.com/ameingast/slisp
 License:             BSD3
 License-file:        LICENSE
@@ -23,11 +24,11 @@ Executable slisp
 
   Main-is: Main.hs
 
-  Build-Depends: parsec
-  Build-Depends: base
-  Build-Depends: haskell98
-  Build-Depends: containers
-  Build-Depends: haskeline
+  Build-Depends: parsec >= 3
+  Build-Depends: base >= 4 && < 5
+  Build-Depends: haskell98 >= 1
+  Build-Depends: containers >= 0.4
+  Build-Depends: haskeline >= 0.6
   
   ghc-options: -Wall -fno-warn-unused-do-bind -O3
   ghc-prof-options: -prof -auto-all

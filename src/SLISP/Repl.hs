@@ -40,13 +40,12 @@ statefulRepl verbose t =  do
     case x of
         "" -> statefulRepl verbose t
         ":q" -> return ()
-        ":r" -> putStrLn "---" >> repl verbose []
         ':':'e':x' ->  
             let cmds = if x' == [] then unwords $ map fst $ M.toList t 
                                    else show $ fromJust $ M.lookup (tail x') t
             in putStrLn cmds >> statefulRepl verbose t
         _ ->
-          case listEval (t, parse' x) of
+          case listEval (t, parseLisp x) of
             [] ->  statefulRepl verbose t
             xs -> let (t', e) = last xs
                   in putStrLn (show e) >> statefulRepl verbose t'
