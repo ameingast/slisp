@@ -1,4 +1,6 @@
-module SLISP.Parser (parseLisp) where
+module SLISP.Parser(
+  parseLisp
+) where
     
 import SLISP.Data
 
@@ -66,7 +68,11 @@ parseFExpr :: GenParser Char st E
 parseFExpr = parseStartsWith '#' parseExpr F
 
 parseExpr :: GenParser Char st E
-parseExpr = (try parseAtom) <|> (try parseList) <|> (try parseFExpr) <|> (try parseQExpr)
+parseExpr = 
+  (try parseAtom) <|> 
+  (try parseList) <|> 
+  (try parseFExpr) <|> 
+  (try parseQExpr)
 
 parseBase :: GenParser Char st [E]
 parseBase = 

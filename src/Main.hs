@@ -1,4 +1,6 @@
-module Main(main) where
+module Main(
+  main
+) where
     
 import SLISP.Core
 import SLISP.Data
@@ -6,8 +8,7 @@ import SLISP.Repl
 import SLISP.Util.System(time)
 
 import System(getArgs, exitFailure)
-
-import qualified Control.Exception as E
+import qualified Control.Exception as E(catch, SomeException)
 
 main :: IO ()
 main = do

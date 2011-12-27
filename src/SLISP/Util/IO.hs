@@ -1,4 +1,6 @@
-module SLISP.Util.IO (safeLine) where
+module SLISP.Util.IO (
+safeLine
+) where
 
 import System.Console.Haskeline(runInputT, defaultSettings, getInputLine)
   

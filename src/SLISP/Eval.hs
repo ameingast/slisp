@@ -1,10 +1,12 @@
-module SLISP.Eval (eval, listEval) where
+module SLISP.Eval(
+  eval, 
+  listEval
+) where
 
 import SLISP.Data
 
 import Char(isDigit)
 import Maybe(fromJust)
-
 import qualified Data.Map as Map(Map, insert, lookup, member)
 
 listEval :: ListState -> [State]
@@ -23,6 +25,8 @@ eval (t,Q e) = (t,e)
 eval (t,F e) = let (_,e') = eval (t,e) in (t, F e')
 eval (t,K k e) = let (t',e') = eval (t,e) in (t',K k e')
 eval (t,L []) = (t, L [])
+eval (t, Infinity) = (t, Infinity)
+eval (t, NegInfinity) = (t, NegInfinity)
 eval (t,L ((S e):es)) = evalSymbol (t,S e) es
 eval (t,L ((L l):es)) = let (t',l') = eval (t,L l) in eval (t',L (l':es))
 eval (_t,L es) = error $ "Illegal eval call: " ++ show es
@@ -75,6 +79,8 @@ builtin :: [(String, [E] -> E)]
 builtin = [
     ("T",       tryAppend (I 1)),
     ("NIL",     tryAppend (I 0)),
+    ("INF",     tryAppend Infinity),
+    ("-INF",    tryAppend NegInfinity),
     ("+",       foldl1NumOp (+)),
     ("*",       foldl1NumOp (*)),
     ("-",       foldl1NumOp (-)),

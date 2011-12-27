@@ -1,4 +1,6 @@
-module SLISP.Repl (repl) where
+module SLISP.Repl (
+repl
+) where
   
 import SLISP.Core
 import SLISP.Data
@@ -6,8 +8,8 @@ import SLISP.Eval
 import SLISP.Parser
 import SLISP.Util.IO(safeLine)
 
-import qualified Control.Exception as E
-import qualified Data.Map as M
+import qualified Control.Exception as E(catch, SomeException)
+import qualified Data.Map as M(toList, lookup)
 
 import Maybe
 import System.IO

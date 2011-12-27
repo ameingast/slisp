@@ -154,6 +154,9 @@
 (defun sum (xs) 
   (foldl #'+ 0 xs))
   
+(defun prod (xs)
+  (foldl #'* 1 xs))
+  
 (defun qsort (xs)
   (if (null? xs) '()
     (let ((head (car xs))

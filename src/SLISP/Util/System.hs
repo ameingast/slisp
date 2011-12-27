@@ -1,4 +1,6 @@
-module SLISP.Util.System (time) where
+module SLISP.Util.System (
+  time
+) where
 
 import System.CPUTime(getCPUTime)
   

@@ -1,4 +1,7 @@
-module SLISP.Core (loadLibs, evalFile) where
+module SLISP.Core (
+  loadLibs, 
+  evalFile
+) where
 
 import SLISP.Data
 import SLISP.Eval
