@@ -1,0 +1,8 @@
+#!/bin/sh
+
+SLISP="./dist/build/slisp/slisp"
+SLISP_FLAGS="-b"
+
+for f in ${@}; do
+  ${SLISP} ${SLISP_FLAGS} ${f}
+done

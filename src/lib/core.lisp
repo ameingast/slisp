@@ -147,6 +147,13 @@
 (defun enum-to-from (n m)
   (enum-to-from-step n m 1))
   
+(defun max (xs) '())
+
+(defun min (xs) '())
+
+(defun sum (xs) 
+  (foldl #'+ 0 xs))
+  
 (defun qsort (xs)
   (if (null? xs) '()
     (let ((head (car xs))

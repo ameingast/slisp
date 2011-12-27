@@ -1,3 +1,3 @@
-;;! slisp: ["Error"]
+;;! Exception: ["Error"]
 
 (error "Error")

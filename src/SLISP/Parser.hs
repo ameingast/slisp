@@ -1,4 +1,4 @@
-module SLISP.Parser where
+module SLISP.Parser (parseLisp) where
     
 import SLISP.Data
 

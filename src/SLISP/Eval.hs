@@ -1,11 +1,11 @@
-module SLISP.Eval where
+module SLISP.Eval (eval, listEval) where
 
 import SLISP.Data
 
-import Char
-import Maybe
+import Char(isDigit)
+import Maybe(fromJust)
 
-import qualified Data.Map as M
+import qualified Data.Map as Map(Map, insert, lookup, member)
 
 listEval :: ListState -> [State]
 listEval (_t,[]) = []
@@ -35,7 +35,7 @@ evalSymbol (t,S s) es =
     BuiltinSymbol -> let f = fromJust $ lookup s builtin in (t,f els)
     BuiltinStateSymbol -> let f = fromJust $ lookup s builtinSpecial in f (t,es)
     ExternalSymbol ->
-      let (args, expr) = fromJust $ M.lookup s t
+      let (args, expr) = fromJust $ Map.lookup s t
           els' = keyOrder args els
           pairs = zip args (map quote els')
       in eval (t,apply expr pairs)
@@ -68,7 +68,7 @@ apply x _ = x
 symbolType :: SymbolTable -> String -> SymbolType
 symbolType _ s | elem s (map fst builtin) = BuiltinSymbol
 symbolType _ s | elem s (map fst builtinSpecial) = BuiltinStateSymbol
-symbolType t s | M.member s t = ExternalSymbol
+symbolType t s | Map.member s t = ExternalSymbol
 symbolType _ _ = NoSymbol
 
 builtin :: [(String, [E] -> E)]
@@ -151,18 +151,18 @@ builtinSpecial = [
     ("error",   error . show . map snd . listEval)]
 
 lispDefun :: ListState -> State
-lispDefun (t,((S s):(L a):b:_)) = (M.insert s (map fromS a, b) t, S s)
+lispDefun (t,((S s):(L a):b:_)) = (Map.insert s (map fromS a, b) t, S s)
 lispDefun _ = error "Type error: (String . List . Expression) expected."
 
 lispSetq :: ListState -> State
-lispSetq (t,((S s):e:_)) = (M.insert s ([],e) t, e)
+lispSetq (t,((S s):e:_)) = (Map.insert s ([],e) t, e)
 lispSetq _ = error "Type error: (String . Expression) expected."
 
 lispLet :: ListState -> State
 lispLet (t, L []:es) = (t,snd $ last $ listEval (t,es))
 lispLet (t, L l:es) =
   let L [name,expr] = head l
-      t' = M.insert (fromS name) ([],expr) t
+      t' = Map.insert (fromS name) ([],expr) t
   in (t,snd $ lispLet (t', L (tail l):es))
 lispLet _ = error "Type error: List expected."
 
@@ -201,17 +201,17 @@ lispCond (t,L [c,a]:xs) =
   in if fromLispBool c' then eval (t',a) else lispCond (t',xs)
 lispCond _ = error "Type error: List expected."
 
-lispLambda :: ListState -> (M.Map String ([String], E), E)
+lispLambda :: ListState -> (Map.Map String ([String], E), E)
 lispLambda (t,(L args):body:_) =
   let name = newLambdaName t "lambda_0"
-  in (M.insert name (map fromS args,body) t, S name)
+  in (Map.insert name (map fromS args,body) t, S name)
 lispLambda _ = error "Type error: (List . Expression) expected."
 
 newLambdaName :: SymbolTable -> String -> String
 newLambdaName t s = 
   let (name,number) = break isDigit s
       name' = name ++ show (read number + 1 :: Integer)
-  in case M.lookup name t of
+  in case Map.lookup name t of
     Just _ -> newLambdaName t name'
     Nothing -> name'
 
@@ -219,7 +219,10 @@ lispEnv :: ListState -> State
 lispEnv (t, x:_) = 
   let (t', x') = eval (t, x)
       word = (fromSClear x')
-      (args, body) = fromJust $ M.lookup word t'
-      fun = S $ "(lambda(" ++ (unwords args) ++ ") " ++ fromS body ++ ")"
-  in  (t', fun)
-lispEnv _ = error "Type error: Expression expected."
+      fun = Map.lookup word t'
+  in case fun of
+    Nothing -> error $ "No such word: " ++ word
+    Just (args, body) -> (t', S $ formatFun args body)
+lispEnv (_, xs) = 
+  error $ "Type error on call 'env': Expression expected. Got " ++ 
+    show xs ++ " instead."

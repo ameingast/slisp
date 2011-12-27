@@ -1,6 +1,6 @@
 module SLISP.Data where
     
-import qualified Data.Map as M
+import qualified Data.Map as Map(Map, empty)
     
 data E =    I Integer   |
             S String    |
@@ -36,7 +36,7 @@ instance Ord E where
     compare _ _ = LT
 
 type Signature      =   ([String],E)
-type SymbolTable    =   M.Map String Signature
+type SymbolTable    =   Map.Map String Signature
 
 data SymbolType     =   BuiltinSymbol       |
                         BuiltinStateSymbol  |
@@ -46,14 +46,14 @@ data SymbolType     =   BuiltinSymbol       |
 type State = (SymbolTable, E)
 type ListState = (SymbolTable, [E])
 
-emptyTable :: M.Map k a
-emptyTable = M.empty
+emptyTable :: Map.Map k a
+emptyTable = Map.empty
                   
-fromI   ::  E -> Integer
-fromI   =   read . show
+fromI :: E -> Integer
+fromI = read . show
 
-fromS   ::  E -> String
-fromS   =   show
+fromS :: E -> String
+fromS = show
 
 fromSClear :: E -> String
 fromSClear (S x) = x
@@ -82,3 +82,6 @@ fromLispBool _      =   True
 toLispBool          ::  Bool -> E
 toLispBool True     =   I 1
 toLispBool False    =   I 0
+
+formatFun :: [String] -> E -> String
+formatFun args body = "(lambda(" ++ unwords args ++ ") " ++ fromS body ++ ")"
