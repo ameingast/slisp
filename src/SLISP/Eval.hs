@@ -19,6 +19,7 @@ lastState xs = Just (last $ map fst xs, map snd xs)
 
 eval :: State -> State
 eval (t,I i) = (t,I i)
+eval (t, Fl f) = (t, Fl f)
 eval (t,S s) = evalSymbol (t,(S s)) []
 eval (t,ST s) = (t,ST s)
 eval (t,Q e) = (t,e)
@@ -84,7 +85,8 @@ builtin = [
     ("+",       foldl1NumOp (+)),
     ("*",       foldl1NumOp (*)),
     ("-",       foldl1NumOp (-)),
-    ("/",       foldl1NumOp div),
+    ("/",       foldl1FractOp (/)),
+    ("div",     foldl1NumOp div),
     ("not",     toLispBool . not . fromLispBool . head),
     ("++",      mapNumOp (+1)),
     ("--",      mapNumOp (+(-1))),
@@ -125,6 +127,12 @@ mapNumOp f xs = L $ map (numUnOp f) xs
 
 foldl1NumOp :: (Integer -> Integer -> Integer) -> [E] -> E
 foldl1NumOp f xs = foldl1 (numBinOp f) xs
+
+foldl1FractOp :: (Double -> Double -> Double) -> [E] -> E
+foldl1FractOp f xs = foldl1 (fractBinOp f) xs
+
+fractBinOp :: (Double -> Double -> Double) -> E -> E -> E
+fractBinOp f x y = Fl $ f (fromFl x) (fromFl y)
 
 foldl1BoolOp :: (E -> E -> Bool) -> [E] -> E
 foldl1BoolOp f xs = foldl1 (boolBinOp f) xs

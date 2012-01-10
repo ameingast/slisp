@@ -5,7 +5,8 @@ module SLISP.Parser(
 import SLISP.Data
 
 import Text.ParserCombinators.Parsec
-import Control.Applicative((*>), (<*))
+import Control.Applicative((*>), (<*), (<$))
+import Control.Monad(liftM, liftM2)
 
 symbol :: GenParser Char st Char
 symbol = oneOf "!$%&|*+-/<=>?@^_~.`"
@@ -19,39 +20,48 @@ parseSpaces =
       comment = string ";" >> skipMany (satisfy (/= '\n')) >> parseSpaces
   in (try comment) <|> spaces' <|> return ()
 
-parseNumber :: GenParser Char st E     
-parseNumber = do  
-    s <- option "" $ string "-"
-    n <- many1 digit
-    return $ I $ read $ s ++ n
+parseSignum :: GenParser Char st String
+parseSignum = ("" <$ string "+") <|> string "-" <|> string ""
 
+parseFixnum :: GenParser Char st E     
+parseFixnum = do  
+  s <- parseSignum
+  n <- many1 digit <?> "Fixnum digits"
+  return $ I $ read $ s ++ n
+
+parseFloat :: GenParser Char st E
+parseFloat = do
+  s <- parseSignum
+  pre <- many1 digit
+  pt <- char '.'
+  pst <- many1 digit <?> "Floatnum digits after comma"
+  return $ Fl $ read $ s ++ pre ++ [pt] ++ pst
+  
 parseSymbol :: GenParser Char st E
-parseSymbol = do  
-    s <- symbol <|> letter
-    m <- many $ symbol <|> letter <|> digit
-    return $ S (s:m)
+parseSymbol = 
+  liftM2 (\a b -> S (a:b)) 
+    (symbol <|> letter) 
+    (many $ symbol <|> letter <|> digit)
 
 parseString :: GenParser Char st E
-parseString = do
-    char '"'
-    x <- many (noneOf "\"")
-    char '"' <?> "Quote at end of string"
-    return $ ST x
+parseString =
+  liftM ST $ (string "\"") *> (many (noneOf "\"")) <* (string "\"")
 
 parseKey :: GenParser Char st E
 parseKey = do
-    char ':'
-    S x <- parseSymbol
-    parseSpaces
-    y <- parseExpr
-    return $ K x y
+  char ':'
+  S x <- parseSymbol
+  parseSpaces
+  y <- parseExpr
+  return $ K x y
 
 parseAtom :: GenParser Char st E
 parseAtom = 
-  (try parseNumber) <|> 
-  (try parseSymbol) <|> 
-  (try parseString) <|> 
-  (try parseKey)
+  (try parseFloat) <|>
+  (try parseFixnum)  <|>
+  parseSymbol <|> 
+  parseString <|> 
+  parseKey
 
 parseList :: GenParser Char st E
 parseList = do
@@ -69,18 +79,17 @@ parseFExpr = parseStartsWith '#' parseExpr F
 
 parseExpr :: GenParser Char st E
 parseExpr = 
-  (try parseAtom) <|> 
-  (try parseList) <|> 
-  (try parseFExpr) <|> 
-  (try parseQExpr)
+  parseAtom  <|> 
+  parseList  <|> 
+  parseFExpr <|> 
+  parseQExpr
 
 parseBase :: GenParser Char st [E]
 parseBase = 
-  ((try parseAtom) <|> 
-  (try parseList)  <|>
-  (try parseQExpr) <|>
-  (try parseFExpr) <|> 
-  (try parseList)) `sepEndBy` parseSpaces
+  (parseAtom <|> 
+  parseList  <|>
+  parseQExpr <|>
+  parseFExpr) `sepEndBy` parseSpaces
   
 startParse :: GenParser Char st [E]
 startParse = parseSpaces *> parseBase <* eof

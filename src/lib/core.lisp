@@ -28,6 +28,9 @@
   (if (null? xs) z
     (foldl f (funcall f z (car xs)) (cdr xs))))
 
+(defun foldr (f z xs)
+  (foldl f z (reverse xs)))
+
 (defun filter (f xs)
   (if (null? xs) '()
     (if (funcall f (car xs)) 
@@ -148,24 +151,27 @@
   (enum-to-from-step n m 1))
   
 (defun max (xs)
-  (max-property-with #'< -INF xs))
+  (max-property-wrt #'< -INF xs))
 
 (defun min (xs) 
-  (max-property-with #'> INF xs))
+  (max-property-wrt #'> INF xs))
 
-(defun max-property-with (f k xs)
+(defun max-property-wrt (f k xs)
   (if (null? xs) k
     (let ((head (car xs))
           (tail (cdr xs))
           (kk (if (funcall f k head) head k)))
-      (max-property-with f kk tail))))
+      (max-property-wrt f kk tail))))
 
 (defun sum (xs) 
   (foldl #'+ 0 xs))
   
 (defun prod (xs)
   (foldl #'* 1 xs))
-  
+
+(defun arith-mean (xs)
+  (/ (sum xs) (length xs)))
+
 (defun qsort (xs)
   (if (null? xs) '()
     (let ((head (car xs))
@@ -175,5 +181,5 @@
           (sml-sorted (qsort sml))
           (grt-sorted (qsort grt)))
       (append sml-sorted
-        (cons head 
+        (cons head
           grt-sorted)))))

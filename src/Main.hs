@@ -14,7 +14,7 @@ main :: IO ()
 main = do
   getArgs >>= \args -> case args of 
     [] -> return ()
-    "-h":_ -> putStrLn "slisp [-rhi] <files>"
+    "-h":_ -> putStrLn "slisp [-rhib] <files>"
     "-r":files -> repl True files
     "-i":_ -> repl False []
     "-b":files -> time (runFiles files)

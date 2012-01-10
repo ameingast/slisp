@@ -9,6 +9,7 @@ data E =
   Q E         |
   F E         |
   K String E  |
+  Fl Double   |
   Infinity    |
   NegInfinity |
   L [E]       
@@ -21,6 +22,7 @@ instance Show E where
   show (F e) = "#" ++ show e
   show (K k e) = ":" ++ k ++ " " ++ show e
   show (L l) = "(" ++ unwords (map show l) ++ ")"
+  show (Fl f) = show f
   show Infinity = "INF"
   show NegInfinity = "-INF"
     
@@ -32,6 +34,7 @@ instance Eq E where
   (F e) == (F g) = e == g
   (L l) == (L k) = l == k
   (K k e) == (K l f) = k == l && e == f
+  (Fl a) == (Fl b) = a == b
   Infinity == Infinity = True
   NegInfinity == NegInfinity = True
   _ == _ = False
@@ -40,6 +43,7 @@ instance Ord E where
   compare (I i) (I j) = compare i j
   compare (I i) (S s) = compare (show i) s
   compare (S s) (I i) = compare s (show i)
+  compare (Fl a) (Fl b) = compare a b
   compare Infinity Infinity = EQ
   compare Infinity _ = GT
   compare NegInfinity NegInfinity = EQ
@@ -63,6 +67,9 @@ emptyTable = Map.empty
                   
 fromI :: E -> Integer
 fromI = read . show
+
+fromFl :: E -> Double
+fromFl = read . show
 
 fromS :: E -> String
 fromS = show
