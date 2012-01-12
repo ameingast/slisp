@@ -24,10 +24,8 @@ parseSignum :: GenParser Char st String
 parseSignum = ("" <$ string "+") <|> string "-" <|> string ""
 
 parseFixnum :: GenParser Char st E     
-parseFixnum = do  
-  s <- parseSignum
-  n <- many1 digit <?> "Fixnum digits"
-  return $ I $ read $ s ++ n
+parseFixnum = 
+  liftM (I . read) $ liftM2 (++) parseSignum (many1 digit)
 
 parseFloat :: GenParser Char st E
 parseFloat = do
@@ -36,31 +34,31 @@ parseFloat = do
   pt <- char '.'
   pst <- many1 digit <?> "Floatnum digits after comma"
   return $ Fl $ read $ s ++ pre ++ [pt] ++ pst
-  
+
+parseSymbolString :: GenParser Char st String
+parseSymbolString = 
+  liftM2 (:) (symbol <|> letter) (many $ symbol <|> letter <|> digit)
+
 parseSymbol :: GenParser Char st E
-parseSymbol = 
-  liftM2 (\a b -> S (a:b)) 
-    (symbol <|> letter) 
-    (many $ symbol <|> letter <|> digit)
+parseSymbol = liftM S parseSymbolString
 
 parseString :: GenParser Char st E
-parseString =
+parseString = 
   liftM ST $ (string "\"") *> (many (noneOf "\"")) <* (string "\"")
 
 parseKey :: GenParser Char st E
-parseKey = do
-  char ':'
-  S x <- parseSymbol
-  parseSpaces
-  y <- parseExpr
-  return $ K x y
+parseKey = liftM K $ (string ":") *> parseSymbolString
+
+parseMap :: GenParser Char st E
+parseMap = liftM2 M (parseKey <* parseSpaces) parseExpr
 
 parseAtom :: GenParser Char st E
 parseAtom = 
   (try parseFloat) <|>
   (try parseFixnum)  <|>
   parseSymbol <|> 
-  parseString <|> 
+  parseString <|>
+  (try parseMap) <|>
   parseKey
 
 parseList :: GenParser Char st E

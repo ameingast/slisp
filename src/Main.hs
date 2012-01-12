@@ -1,5 +1,6 @@
 module Main(
-  main
+  main,
+  emptyRepl
 ) where
     
 import SLISP.Core
@@ -19,6 +20,9 @@ main = do
     "-i":_ -> repl False []
     "-b":files -> time (runFiles files)
     files -> runFiles files
+
+emptyRepl :: IO ()
+emptyRepl = repl True []
 
 runFiles :: [String] -> IO ()
 runFiles files = E.catch (justRun files) handler

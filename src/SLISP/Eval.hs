@@ -7,7 +7,7 @@ import SLISP.Data
 
 import Char(isDigit)
 import Maybe(fromJust)
-import qualified Data.Map as Map(Map, insert, lookup, member)
+import qualified Data.Map as Map(Map, insert, delete, lookup, member)
 
 listEval :: ListState -> [State]
 listEval (_t,[]) = []
@@ -24,7 +24,9 @@ eval (t,S s) = evalSymbol (t,(S s)) []
 eval (t,ST s) = (t,ST s)
 eval (t,Q e) = (t,e)
 eval (t,F e) = let (_,e') = eval (t,e) in (t, F e')
-eval (t,K k e) = let (t',e') = eval (t,e) in (t',K k e')
+eval (t,K k) = (t, K k)
+eval (t,M (K k) e) = let (t',e') = eval (t,e) in (t',M (K k) e')
+eval (_t, M _k _e) = error $ "Illegal eval call: Map (Symbol Expression) expected" 
 eval (t,L []) = (t, L [])
 eval (t, Infinity) = (t, Infinity)
 eval (t, NegInfinity) = (t, NegInfinity)
@@ -56,7 +58,7 @@ keyOrder (a:as) exprs =
 
 keyOrder' :: String -> [E] -> Maybe E
 keyOrder' _ [] = Nothing
-keyOrder' a ((K a' e):_) | a == a' = Just e
+keyOrder' a ((M (K a') e):_) | a == a' = Just e
 keyOrder' a (_:es) = keyOrder' a es
 
 quote :: E -> E
@@ -68,7 +70,6 @@ apply (L l) pairs = L $ map (\x -> apply x pairs) l
 apply (S s) pairs | elem s (map fst pairs) = snd $ head $ filter (\(s',_) -> s == s') pairs
 apply (F (Q s)) pairs = F $ Q $ apply s pairs
 apply x _ = x
-
 
 symbolType :: SymbolTable -> String -> SymbolType
 symbolType _ s | elem s (map fst builtin) = BuiltinSymbol
@@ -142,17 +143,18 @@ lispCons (x:(L l):_) = L (x:l)
 lispCons _ = error "Type error: (expression . list) expected."
 
 lispKey :: [E] -> E
-lispKey ((K k _):_) = S k
+lispKey ((M (K k) _):_) = S k
 lispKey _ = error "Type error: Key expected."
 
 lispValue :: [E] -> E
-lispValue ((K _ v):_) = v
+lispValue ((M _ v):_) = v
 lispValue _ = error "Type error: Key expected."
 
 builtinSpecial :: [(String, (ListState -> State))]
 builtinSpecial = [
     ("defun",   lispDefun),
     ("setq",    lispSetq),
+    ("unsetq",  lispUnsetq),
     ("let",     lispLet),
     ("funcall", lispFuncall),
     ("apply",   lispApply),
@@ -166,11 +168,15 @@ builtinSpecial = [
 
 lispDefun :: ListState -> State
 lispDefun (t,((S s):(L a):b:_)) = (Map.insert s (map fromS a, b) t, S s)
-lispDefun _ = error "Type error: (String . List . Expression) expected."
+lispDefun _ = error "Type error: (Symbol . List . Expression) expected."
 
 lispSetq :: ListState -> State
 lispSetq (t,((S s):e:_)) = (Map.insert s ([],e) t, e)
-lispSetq _ = error "Type error: (String . Expression) expected."
+lispSetq _ = error "Type error: (Symbol . Expression) expected."
+
+lispUnsetq :: ListState -> State
+lispUnsetq (t, ((S s):_)) = (Map.delete s t, I 1)
+lispUnsetq _ = error "Type error: Symbol expected."
 
 lispLet :: ListState -> State
 lispLet (t, L []:es) = (t,snd $ last $ listEval (t,es))

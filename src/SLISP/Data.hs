@@ -8,7 +8,8 @@ data E =
   ST String   |
   Q E         |
   F E         |
-  K String E  |
+  K String    |
+  M E E       |
   Fl Double   |
   Infinity    |
   NegInfinity |
@@ -20,7 +21,8 @@ instance Show E where
   show (ST s) = show s
   show (Q e) = "'" ++ show e
   show (F e) = "#" ++ show e
-  show (K k e) = ":" ++ k ++ " " ++ show e
+  show (K k) = ":" ++ k
+  show (M k e) = show k ++ " " ++ show e
   show (L l) = "(" ++ unwords (map show l) ++ ")"
   show (Fl f) = show f
   show Infinity = "INF"
@@ -33,7 +35,8 @@ instance Eq E where
   (Q e) == (Q g) = e == g
   (F e) == (F g) = e == g
   (L l) == (L k) = l == k
-  (K k e) == (K l f) = k == l && e == f
+  (K k) == (K kk) = k == kk
+  (M k e) == (M l f) = k == l && e == f
   (Fl a) == (Fl b) = a == b
   Infinity == Infinity = True
   NegInfinity == NegInfinity = True
