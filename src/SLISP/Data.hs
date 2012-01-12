@@ -1,60 +1,60 @@
 module SLISP.Data where
     
-import qualified Data.Map as Map(Map, empty)
+import qualified Data.Map as DM(Map, empty)
     
-data E =      
-  I Integer   |
-  S String    |
-  ST String   |
-  Q E         |
-  F E         |
-  K String    |
-  M E E       |
-  Fl Double   |
-  Infinity    |
-  NegInfinity |
-  L [E]       
+data Expression =      
+  Fixnum Integer            |
+  Symbol String             |
+  Str String                |
+  Quote Expression          |
+  Function Expression       |
+  Key String                |
+  Map Expression Expression |
+  Floatnum Double           |
+  Infinity                  |
+  NegInfinity               |
+  List [Expression]       
             
-instance Show E where
-  show (I i) = show i
-  show (S s) = s
-  show (ST s) = show s
-  show (Q e) = "'" ++ show e
-  show (F e) = "#" ++ show e
-  show (K k) = ":" ++ k
-  show (M k e) = show k ++ " " ++ show e
-  show (L l) = "(" ++ unwords (map show l) ++ ")"
-  show (Fl f) = show f
+instance Show Expression where
+  show (Fixnum i) = show i
+  show (Symbol s) = s
+  show (Str s) = show s
+  show (Quote e) = "'" ++ show e
+  show (Function e) = "#" ++ show e
+  show (Key k) = ":" ++ k
+  show (Map k e) = show k ++ " " ++ show e
+  show (List l) = "(" ++ unwords (map show l) ++ ")"
+  show (Floatnum f) = show f
   show Infinity = "INF"
   show NegInfinity = "-INF"
     
-instance Eq E where
-  (I i) == (I j) = i == j
-  (S s) == (S t) = s == t
-  (ST s) == (ST t) = s == t
-  (Q e) == (Q g) = e == g
-  (F e) == (F g) = e == g
-  (L l) == (L k) = l == k
-  (K k) == (K kk) = k == kk
-  (M k e) == (M l f) = k == l && e == f
-  (Fl a) == (Fl b) = a == b
+instance Eq Expression where
+  (Fixnum i) == (Fixnum j) = i == j
+  (Floatnum a) == (Floatnum b) = a == b
+  (Symbol s) == (Symbol t) = s == t
+  (Str s) == (Str t) = s == t
+  (Quote e) == (Quote g) = e == g
+  (Function e) == (Function g) = e == g
+  (List l) == (List k) = l == k
+  (Key k) == (Key kk) = k == kk
+  (Map k e) == (Map l f) = k == l && e == f
   Infinity == Infinity = True
   NegInfinity == NegInfinity = True
   _ == _ = False
     
-instance Ord E where
-  compare (I i) (I j) = compare i j
-  compare (I i) (S s) = compare (show i) s
-  compare (S s) (I i) = compare s (show i)
-  compare (Fl a) (Fl b) = compare a b
+instance Ord Expression where
+  compare (Fixnum i) (Fixnum j) = compare i j
+  compare (Symbol s) (Symbol t) = compare s t
+  compare (Str s) (Str t) = compare s t
+  compare (Floatnum a) (Floatnum b) = compare a b
   compare Infinity Infinity = EQ
   compare Infinity _ = GT
   compare NegInfinity NegInfinity = EQ
   compare NegInfinity _ = LT
   compare _ _ = LT
 
-type Signature = ([String],E)
-type SymbolTable = Map.Map String Signature
+type Signature = ([String], Expression)
+type SymbolTable = DM.Map String Signature
 
 data SymbolType = 
   BuiltinSymbol       |
@@ -62,48 +62,36 @@ data SymbolType =
   ExternalSymbol      |
   NoSymbol
 
-type State = (SymbolTable, E)
-type ListState = (SymbolTable, [E])
+type State = (SymbolTable, Expression)
+type ListState = (SymbolTable, [Expression])
 
-emptyTable :: Map.Map k a
-emptyTable = Map.empty
+emptyTable :: DM.Map k a
+emptyTable = DM.empty
                   
-fromI :: E -> Integer
-fromI = read . show
+-- FIXME: fromExpression
+fromFixnum :: Expression -> Integer
+fromFixnum = read . show
 
-fromFl :: E -> Double
-fromFl = read . show
+fromFloatnum :: Expression -> Double
+fromFloatnum = read . show
 
-fromS :: E -> String
-fromS = show
+fromSClear :: Expression -> String
+fromSClear (Symbol x) = x
+fromSClear (Str x) = x
+fromSClear x = show x
 
-fromSClear :: E -> String
-fromSClear (S x) = x
-fromSClear (ST x) = x
-fromSClear x = fromS x
+unlist :: Expression -> [Expression]
+unlist (List l) = l
+unlist x = error $ "Cannot unlist " ++ show x
 
-fromST :: E -> String
-fromST = show
-
-fromQ :: E -> E
-fromQ (Q e) = e
-fromQ x = error $ "Cannot unquote " ++ show x
-
-fromK :: E -> String
-fromK = show
-
-fromL :: E -> [E]
-fromL (L l) = l
-fromL x = error $ "Cannot unlist " ++ show x
-
-fromLispBool :: E -> Bool
-fromLispBool (I i) = i /= 0
-fromLispBool (L l) = l /= []
+fromLispBool :: Expression -> Bool
+fromLispBool (Fixnum i) = i /= 0
+fromLispBool (List l) = l /= []
 fromLispBool _ = True
 
-toLispBool :: Bool -> E
-toLispBool True = I 1
-toLispBool False = I 0
+toLispBool :: Bool -> Expression
+toLispBool True = Fixnum 1
+toLispBool False = Fixnum 0
 
-formatFun :: [String] -> E -> String
-formatFun args body = "(lambda(" ++ unwords args ++ ") " ++ fromS body ++ ")"
+formatFun :: [String] -> Expression -> String
+formatFun args body = "(lambda(" ++ unwords args ++ ") " ++ show body ++ ")"

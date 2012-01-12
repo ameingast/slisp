@@ -1,5 +1,5 @@
 module SLISP.Repl (
-repl
+  repl
 ) where
   
 import SLISP.Core
@@ -23,7 +23,7 @@ banner = "S(low)-LISP"
 repl :: Bool -> [String] -> IO ()
 repl verbose files = do
   if verbose then putStrLn ("Welcome to " ++ banner) else return ()
-  (t,_) <- loadLibs files (emptyTable,I 1)
+  (t,_) <- loadLibs files (emptyTable, Fixnum 1)
   safeStatefulRepl verbose t
 
 safeStatefulRepl :: Bool -> SymbolTable -> IO ()
@@ -53,5 +53,5 @@ statefulRepl verbose t =  do
                   in putStrLn (show e) >> statefulRepl verbose t'
 
 -- TODO: write in dot-free notation by converting (a, b) to a -> b
-showFun :: ([String], E) -> String
+showFun :: ([String], Expression) -> String
 showFun (args, body) = formatFun args body

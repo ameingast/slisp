@@ -11,7 +11,7 @@ import Control.Monad(liftM, liftM2)
 symbol :: GenParser Char st Char
 symbol = oneOf "!$%&|*+-/<=>?@^_~.`"
 
-parseStartsWith :: Char -> (GenParser Char st E) -> (E -> E) -> GenParser Char st E
+parseStartsWith :: Char -> (GenParser Char st Expression) -> (Expression -> Expression) -> GenParser Char st Expression
 parseStartsWith c expr construct = char c >> expr >>= return . construct
 
 parseSpaces :: GenParser Char st ()
@@ -23,36 +23,36 @@ parseSpaces =
 parseSignum :: GenParser Char st String
 parseSignum = ("" <$ string "+") <|> string "-" <|> string ""
 
-parseFixnum :: GenParser Char st E     
+parseFixnum :: GenParser Char st Expression
 parseFixnum = 
-  liftM (I . read) $ liftM2 (++) parseSignum (many1 digit)
+  liftM (Fixnum . read) $ liftM2 (++) parseSignum (many1 digit)
 
-parseFloat :: GenParser Char st E
+parseFloat :: GenParser Char st Expression
 parseFloat = do
   s <- parseSignum
   pre <- many1 digit
   pt <- char '.'
   pst <- many1 digit <?> "Floatnum digits after comma"
-  return $ Fl $ read $ s ++ pre ++ [pt] ++ pst
+  return $ Floatnum $ read $ s ++ pre ++ [pt] ++ pst
 
 parseSymbolString :: GenParser Char st String
 parseSymbolString = 
   liftM2 (:) (symbol <|> letter) (many $ symbol <|> letter <|> digit)
 
-parseSymbol :: GenParser Char st E
-parseSymbol = liftM S parseSymbolString
+parseSymbol :: GenParser Char st Expression
+parseSymbol = liftM Symbol parseSymbolString
 
-parseString :: GenParser Char st E
+parseString :: GenParser Char st Expression
 parseString = 
-  liftM ST $ (string "\"") *> (many (noneOf "\"")) <* (string "\"")
+  liftM Str $ (string "\"") *> (many (noneOf "\"")) <* (string "\"")
 
-parseKey :: GenParser Char st E
-parseKey = liftM K $ (string ":") *> parseSymbolString
+parseKey :: GenParser Char st Expression
+parseKey = liftM Key $ (string ":") *> parseSymbolString
 
-parseMap :: GenParser Char st E
-parseMap = liftM2 M (parseKey <* parseSpaces) parseExpr
+parseMap :: GenParser Char st Expression
+parseMap = liftM2 Map (parseKey <* parseSpaces) parseExpr
 
-parseAtom :: GenParser Char st E
+parseAtom :: GenParser Char st Expression
 parseAtom = 
   (try parseFloat) <|>
   (try parseFixnum)  <|>
@@ -61,38 +61,38 @@ parseAtom =
   (try parseMap) <|>
   parseKey
 
-parseList :: GenParser Char st E
+parseList :: GenParser Char st Expression
 parseList = do
   char '('
   parseSpaces
   x <- parseExpr `sepEndBy` parseSpaces
   char ')' <?> "Closing bracket at end of list"
-  return $ L x
+  return $ List x
 
-parseQExpr :: GenParser Char st E
-parseQExpr = parseStartsWith '\'' parseExpr Q
+parseQExpr :: GenParser Char st Expression
+parseQExpr = parseStartsWith '\'' parseExpr Quote
 
-parseFExpr :: GenParser Char st E
-parseFExpr = parseStartsWith '#' parseExpr F
+parseFExpr :: GenParser Char st Expression
+parseFExpr = parseStartsWith '#' parseExpr Function
 
-parseExpr :: GenParser Char st E
+parseExpr :: GenParser Char st Expression
 parseExpr = 
   parseAtom  <|> 
   parseList  <|> 
   parseFExpr <|> 
   parseQExpr
 
-parseBase :: GenParser Char st [E]
+parseBase :: GenParser Char st [Expression]
 parseBase = 
   (parseAtom <|> 
   parseList  <|>
   parseQExpr <|>
   parseFExpr) `sepEndBy` parseSpaces
   
-startParse :: GenParser Char st [E]
+startParse :: GenParser Char st [Expression]
 startParse = parseSpaces *> parseBase <* eof
 
-parseLisp :: String -> [E]
+parseLisp :: String -> [Expression]
 parseLisp s = 
   case (parse startParse "" s) of
     Left e -> error $ show e

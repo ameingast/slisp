@@ -28,7 +28,7 @@ runFiles :: [String] -> IO ()
 runFiles files = E.catch (justRun files) handler
 
 justRun :: [String] -> IO ()    
-justRun files = loadLibs files (emptyTable, I 1) >>= putStrLn . show . snd
+justRun files = loadLibs files (emptyTable, Fixnum 1) >>= putStrLn . show . snd
 
 handler :: E.SomeException -> IO ()
 handler e = (putStrLn $ "Exception: " ++ show e) >> exitFailure
