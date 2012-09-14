@@ -11,7 +11,7 @@ import SLISP.Util.IO(safeLine)
 import qualified Control.Exception as E(catch, SomeException)
 import qualified Data.Map as M(toList, lookup)
 
-import Maybe
+import Data.Maybe
 import System.IO
 
 prompt :: String

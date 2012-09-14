@@ -8,7 +8,8 @@ import SLISP.Data
 import SLISP.Repl
 import SLISP.Util.System(time)
 
-import System(getArgs, exitFailure)
+import System.Environment(getArgs)
+import System.Exit(exitFailure)
 import qualified Control.Exception as E(catch, SomeException)
 
 main :: IO ()

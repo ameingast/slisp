@@ -5,8 +5,8 @@ module SLISP.Eval(
 
 import SLISP.Data
 
-import Char(isDigit)
-import Maybe(fromJust)
+import Data.Char(isDigit)
+import Data.Maybe(fromJust)
 import qualified Data.Map as DM(Map, insert, delete, lookup, member)
 
 listEval :: ListState -> [State]
